@@ -1,0 +1,45 @@
+-- Copyright (c) 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+-- SPDX-License-Identifier: Apache-2.0
+
+module Main where
+
+data User = User
+  with
+    buyer : Party
+    device : Text
+    model : Text
+  deriving (Eq, Show)
+
+
+template Customer
+  with
+    user : User
+    company : Party
+  where
+    signatory user.buyer
+    observer company
+
+    controller company can 
+      Reply : ContractId Dealer
+        with 
+          cost :  Int
+          status : Text
+
+        do 
+          create Dealer with
+            user = user.buyer
+            company = company
+            cost = cost 
+            status = status 
+
+
+template Dealer
+  with 
+    user : Party
+    company : Party
+    cost : Int
+    status : Text
+
+  where
+    signatory company
+    observer user
